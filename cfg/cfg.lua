@@ -158,8 +158,32 @@ cfg.blacklist = {
 	"BJXL"
 }
 
--- Class multipliers. If you want SUVs to use less fuel, 
--- you can change it to anything under 1.0, and vise versa.
+-- all supported vehicle are true
+cfg.supported = {
+	[0] = true, 	-- Compacts
+	[1] = true, 	-- Sedans
+	[2] = true, 	-- SUVs
+	[3] = true, 	-- Coupes
+	[4] = true, 	-- Muscle
+	[5] = true, 	-- Sports Classics
+	[6] = true, 	-- Sports
+	[7] = true, 	-- Super
+	[8] = true, 	-- Motorcycles
+	[9] = true, 	-- Off-road
+	[10] = true, 	-- Industrial
+	[11] = true, 	-- Utility
+	[12] = true, 	-- Vans
+	[13] = false, 	-- Cycles
+	[14] = true, 	-- Boats
+	[15] = false, 	-- Helicopters
+	[16] = false, 	-- Planes
+	[17] = true, 	-- Service
+	[18] = true, 	-- Emergency
+	[19] = true, 	-- Military
+	[20] = true, 	-- Commercial
+	[21] = false, 	-- Trains
+}
+
 cfg.classes = {
 	[0] = 1.0, -- Compacts
 	[1] = 1.0, -- Sedans

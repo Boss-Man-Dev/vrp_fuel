@@ -28,6 +28,7 @@ function Fuel:__construct()
 	self.lastVeh = 0
 
 	self.keys = {}
+	self.keys = {}
 	
 	-- sets nearest pump
 	Citizen.CreateThread(function()
@@ -45,11 +46,8 @@ function Fuel:__construct()
 				end
 			end
 			
-			-- handles getting current disabled keys
-			for k, v in pairs(cfg.DisableKeys) do
-				if v then 
-					table.insert(self.keys, k) 
-				end
+			for _, v in pairs(self.keys) do
+				DisableControlAction(0, v)
 			end
 			
 			-- places maker around pump props
@@ -84,19 +82,21 @@ function Fuel:__construct()
 			-- speedometer
 			if IsPedInAnyVehicle(GetPlayerPed(-1)) and cfg.hud then
 				local vehicle = GetVehiclePedIsIn(GetPlayerPed(-1))
-
-				mph = tostring(math.ceil(GetEntitySpeed(vehicle) * 2.236936))
-				kmh = tostring(math.ceil(GetEntitySpeed(vehicle) * 3.6))
-				fuel = tostring(math.ceil(GetVehicleFuelLevel(vehicle)))
-							
-				--x,y,width,height,scale,text,r,g,b,a,font,jus
-				local mx,my,mw,mh,ms,mr,mg,mb,ma,mf,j = table.unpack(cfg.speedometer.mph)
-				local kx,ky,kw,kh,ks,kr,kg,kb,ka,kf,kj = table.unpack(cfg.speedometer.kmh)
-				local fx,fy,fw,fh,fs,fr,fg,fb,fa,ff,fj = table.unpack(cfg.speedometer.fuel)
-				
-				DrawAdvancedText(mx,my,mw,mh,ms, ""..mph.."  mp/h", mr,mg,mb,ma,mf,j)
-				DrawAdvancedText(kx,ky,kw,kh,ks, ""..kmh.."  km/h", kr,kg,kb,ka,kf,kj)
-				DrawAdvancedText(fx,fy,fw,fh,fs, ""..fuel.." Fuel", fr,fg,fb,fa,ff,fj)
+				local class = GetVehicleClass(vehicle)
+				if class ~= 15 and class ~= 16 and class ~=21 and class ~=13 then		-- We don't want planes, helicopters, bicycles and trains
+					mph = tostring(math.ceil(GetEntitySpeed(vehicle) * 2.236936))
+					kmh = tostring(math.ceil(GetEntitySpeed(vehicle) * 3.6))
+					fuel = tostring(math.ceil(GetVehicleFuelLevel(vehicle)))
+								
+					--x,y,width,height,scale,text,r,g,b,a,font,jus
+					local mx,my,mw,mh,ms,mr,mg,mb,ma,mf,j = table.unpack(cfg.speedometer.mph)
+					local kx,ky,kw,kh,ks,kr,kg,kb,ka,kf,kj = table.unpack(cfg.speedometer.kmh)
+					local fx,fy,fw,fh,fs,fr,fg,fb,fa,ff,fj = table.unpack(cfg.speedometer.fuel)
+					
+					DrawAdvancedText(mx,my,mw,mh,ms, ""..mph.."  mp/h", mr,mg,mb,ma,mf,j)
+					DrawAdvancedText(kx,ky,kw,kh,ks, ""..kmh.."  km/h", kr,kg,kb,ka,kf,kj)
+					DrawAdvancedText(fx,fy,fw,fh,fs, ""..fuel.." Fuel", fr,fg,fb,fa,ff,fj)
+				end
 			end
 			
 			-- random fuel for any new vehicle you enter
@@ -120,39 +120,42 @@ function Fuel:__construct()
 			local x,y,z = table.unpack(GetEntityCoords(ped))	-- player cords
 			local px,py,pz = table.unpack(GetEntityCoords(self.isNearPump)) -- pump cords
 			local vx,vy,vz = table.unpack(GetEntityCoords(vehicle))	-- vehicle cords
+			local class = GetVehicleClass(vehicle)
 			self.remote._test()
 			
-			if self.fueling then
-				DrawText3Ds(px,py,pz + 1.2, "Press ~g~E ~w~to cancel the fueling")
-				if GetDistanceBetweenCoords(x,y,z, px,py,pz) > 1.5 
-				or (IsControlJustReleased(0, 38)) 
-				or self.currentFuel > 100 then
-					self.fueling = false
-					StopAnimTask(ped, "timetable@gardener@filling_can", "gar_ig_5_filling_can", 2.0)
-				end
-			else
-				if GetDistanceBetweenCoords(x,y,z, px,py,pz) <= 5.0 then -- distance between you and pumpf
-					if IsPedInAnyVehicle(ped) and GetPedInVehicleSeat(GetVehiclePedIsIn(ped), -1) == ped then
-						DrawText3Ds(px,py,pz + 1.2, "Exit the vehicle to refuel")
-					else
-						if DoesEntityExist(vehicle) and GetDistanceBetweenCoords(x,y,z,vx,vy,vz) < 2.5 then		--check if by vehicle
-							if not DoesEntityExist(GetPedInVehicleSeat(vehicle, -1)) then	-- checks if in driver seat
-								if GetVehicleFuelLevel(vehicle) < 95 then
-									if not self.inBlacklisted then
-										DrawText3Ds(px,py,pz + 1.2, "Press ~g~E ~w~to refuel vehicle")
-										if(IsControlJustReleased(0, 38))then
-											if self.currentCash > 0 then
-												self.fueling = true
-												self:refuelFromPump(self.isNearPump, ped, vehicle)
-											else
-												DrawText3Ds(px,py,pz + 1.2, "Not enough cash")
+			if class ~= 15 and class ~= 16 and class ~=21 and class ~=13 then		-- We don't want planes, helicopters, bicycles and trains
+				if self.fueling then
+					DrawText3Ds(px,py,pz + 1.2, "Press ~g~E ~w~to cancel the fueling")
+					if GetDistanceBetweenCoords(x,y,z, px,py,pz) > 1.5 
+					or (IsControlJustReleased(0, 38)) 
+					or self.currentFuel > 100 then
+						self.fueling = false
+						StopAnimTask(ped, "timetable@gardener@filling_can", "gar_ig_5_filling_can", 2.0)
+					end
+				else
+					if GetDistanceBetweenCoords(x,y,z, px,py,pz) <= 5.0 then -- distance between you and pumpf
+						if IsPedInAnyVehicle(ped) and GetPedInVehicleSeat(GetVehiclePedIsIn(ped), -1) == ped then
+							DrawText3Ds(px,py,pz + 1.2, "Exit the vehicle to refuel")
+						else
+							if DoesEntityExist(vehicle) and GetDistanceBetweenCoords(x,y,z,vx,vy,vz) < 2.5 then		--check if by vehicle
+								if not DoesEntityExist(GetPedInVehicleSeat(vehicle, -1)) then	-- checks if in driver seat
+									if GetVehicleFuelLevel(vehicle) < 95 then
+										if not self.inBlacklisted then
+											DrawText3Ds(px,py,pz + 1.2, "Press ~g~E ~w~to refuel vehicle")
+											if(IsControlJustReleased(0, 38))then
+												if self.currentCash > 0 then
+													self.fueling = true
+													self:refuelFromPump(self.isNearPump, ped, vehicle)
+												else
+													DrawText3Ds(px,py,pz + 1.2, "Not enough cash")
+												end
 											end
+										else
+											DrawText3Ds(px,py,pz + 1.2, "Unable to fuel vehicle")
 										end
 									else
-										DrawText3Ds(px,py,pz + 1.2, "Unable to fuel vehicle")
+										DrawText3Ds(px,py,pz + 1.2, "Tank is full")
 									end
-								else
-									DrawText3Ds(px,py,pz + 1.2, "Tank is full")
 								end
 							end
 						end
