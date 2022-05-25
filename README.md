@@ -10,7 +10,6 @@ This is a simple fuel system for all on-ground vehicles designed to be as unobtr
 
 ### Known Issues
 1. if fueling stops while nearby try moving closer to pump.
-2. vehicles other than ground vehicles are affected
 
 ### Planned Features
 * add Jerry can suppost
